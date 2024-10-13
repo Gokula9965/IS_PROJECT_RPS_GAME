@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    /* Universal Styling */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #12163c;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .login-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+    }
+
+    .login-box {
+      background-color: #fff;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      width: 400px;
+      max-width: 100%;
+      text-align: center;
+    }
+
+    h2 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    p {
+      color: #777;
+      font-size: 14px;
+      margin-bottom: 30px;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .input-group label {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 16px;
+      color: #333;
+      background-color: #f9f9f9;
+      transition: all 0.3s ease;
+    }
+
+    .input-group input:focus {
+      border-color: #007bff;
+      background-color: #fff;
+    }
+
+    .btn {
+      background-color: #007bff;
+      color: #fff;
+      font-size: 16px;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      width: 100%;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn:hover {
+      background-color: #0056b3;
+    }
+
+    .forgot-password {
+      margin-top: 20px;
+      text-align: right;
+    }
+
+    .forgot-password a {
+      font-size: 14px;
+      color: #007bff;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .forgot-password a:hover {
+      color: #0056b3;
+    }
+
+    .register-link {
+      margin-top: 20px;
+    }
+
+    .register-link p {
+      font-size: 14px;
+      color: #777;
+    }
+
+    .register-link a {
+      color: #007bff;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .register-link a:hover {
+      color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-box">
+      <h2>Welcome Back</h2>
+      <p>Please login to your account</p>
+      <form id="loginForm">
+        <div class="input-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="Enter your email" required>
+        </div>
+        <div class="input-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="Enter your password" required>
+        </div>
+        <button type="submit" class="btn">Login</button>
+        <div class="forgot-password">
+          <a href="#">Forgot Password?</a>
+        </div>
+        <div class="register-link">
+          <p>Don't have an account? <a href="/openregister">Register</a></p>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script>
+    const loginApiUrl = 'http://localhost:3000/login'; // Replace with your actual API URL
+    const loginForm = document.getElementById('loginForm');
+
+    if (loginForm) {
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const emailId = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        try {
+          const response = await fetch(loginApiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ emailId, password }),
+          });   
+          const data=await response?.json();
+          if (data?.Role ==="user") {
+            alert("Login successful");
+            window.location.href="/openindex";
+          }
+          if(data?.Role==="admin")
+          {
+            alert("Login Successful");
+            window.location.href="/openadmin";
+          }
+        } catch (error) {
+          alert('An error occurred while logging in.');
+        }
+      });
+    }
+  </script>
+</body>
+</html>
