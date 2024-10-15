@@ -112,16 +112,69 @@ socket.on("playersConnected", () => {
   gameFooter.classList.add("flex");
 });
 
-const clickChoice = (rpschoice) => {
-  let player;
-  if (player1 == true) {
-    player = "p1Choice";
-  } else if (player1 == false) {
-    player = "p2Choice";
-  }
+const encodeChoiceInImage = (imageSrc, choice) => {
+  return new Promise((resolve) => {
+      const img = new Image();
+      img.src = imageSrc;
+      img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          const imageData = ctx.getImageData(0, 0, img.width, img.height);
+          const data = imageData.data;
+
+          // Encode the choice into the image's pixel data
+          for (let i = 0; i < choice.length; i++) {
+              const charCode = choice.charCodeAt(i);
+              // Modify the pixel's red component to hide the choice
+              data[i * 4] = charCode; // Red channel
+          }
+
+          ctx.putImageData(imageData, 0, 0);
+          resolve(canvas.toDataURL()); // Return the modified image as a data URL
+      };
+  });
+};
+
+const decodeChoiceFromImage = (imageData) => {
+  console.log(imageData)
+  return new Promise((resolve) => {
+      const img = new Image();
+      img.src = imageData;
+      img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          const imageData = ctx.getImageData(0, 0, img.width, img.height);
+          const data = imageData.data;
+
+          let choice = '';
+          // Decode the choice from the image's pixel data
+          for (let i = 0; i < 4; i++) { // Only read the first 4 pixels for the choice
+              const charCode = data[i * 4]; // Red channel
+              if (charCode) {
+                  choice += String.fromCharCode(charCode);
+              }
+          }
+          console.log(choice);
+          resolve(choice);
+      };
+  });
+};
+
+const clickChoice = async (rpschoice) => {
+  // Use a constant generic image from local
+  const imageSrc = 'images/generic.jpg'; // Replace with your image path
+  const encodedImage = await encodeChoiceInImage(imageSrc, rpschoice); // Encode choice in image
 
   gameArea.classList.add("none");
   resultBoard.classList.add("grid");
+
+  // Display the player's choice on the UI
   if (rpschoice == "rock") {
     yourChoice.innerHTML = rockChoice;
     yourChoice.classList.toggle("increase-size");
@@ -135,19 +188,27 @@ const clickChoice = (rpschoice) => {
     yourChoice.classList.toggle("increase-size");
   }
 
+  // Check if result board is currently hidden
   const isNoneResultBoard = resultBoard.classList.contains("none");
   if (isNoneResultBoard) {
     resultBoard.classList.remove("none");
     resultBoard.classList.add("grid");
     resultBoard.classList.add("after-choosing");
   }
-
+console.log(encodedImage)
+  // Emit the encoded image instead of the choice
+  let player;
+  if (player1 == true) {
+    player = "p1Choice";
+  } else if (player1 == false) {
+    player = "p2Choice";
+  }
   socket.emit(player, {
-    rpschoice: rpschoice,
+    imageData: encodedImage, // Send encoded image
     roomID: roomID,
   });
-
 };
+
 
 const displayResult = (choice) => {
   results.classList.remove("none");
@@ -168,23 +229,26 @@ const displayResult = (choice) => {
   }
 };
 
-socket.on("p1Choice", (data) => {
+socket.on("p1Choice", async (data) => {
   if (!player1) {
-    console.log('p1Choice');
-    displayResult(data.rpsValue);
-    oppoTitle.innerText = "OPPO PICKED";
-    oppoChoice.classList.remove("waiting_to_chose");
+      const choice = await decodeChoiceFromImage(data.imageData);
+      console.log(choice)
+      displayResult(choice);
+      oppoTitle.innerText = "OPPO PICKED";
+      oppoChoice.classList.remove("waiting_to_chose");
   }
 });
 
-socket.on("p2Choice", (data) => {
+socket.on("p2Choice", async (data) => {
   if (player1) {
-    console.log('p2Choice');
-    displayResult(data.rpsValue);
-    oppoTitle.innerText = "OPPO PICKED";
-    oppoChoice.classList.remove("waiting_to_chose");
+      const choice = await decodeChoiceFromImage(data.imageData);
+      console.log(choice)
+      displayResult(choice);
+      oppoTitle.innerText = "OPPO PICKED";
+      oppoChoice.classList.remove("waiting_to_chose");
   }
 });
+
 
 const updateScore = (p1Score, p2Score) => {
   if(player1){

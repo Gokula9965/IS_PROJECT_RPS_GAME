@@ -19,6 +19,7 @@ app.use(cors());
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.static(path.join(__dirname, "view")));
 app.use(express.static(path.join(__dirname, "images")));
+
 const storage = multer.memoryStorage(); 
 const upload = multer({ storage: storage });
 app.get("/", (req, res, next) => {
@@ -33,6 +34,9 @@ app.get("/openadmin", (req, res, next) => {
 app.get("/openregister", (req, res, next) => {
   res.sendFile(path.join(__dirname, "register.html"));
 })
+
+
+
 app.post('/register', upload.single('profileImage'), async (req, res) => {
   try {
     const { userName, emailId, password } = req.body;
